@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+tf.compat.v1.disable_eager_execution()
 
 class Fdnn(object):
     'Base class for a feed-foward neural network with Dense Layers'
@@ -27,12 +28,12 @@ class Fdnn(object):
         self.y_out = None
 
         # start tensorflow session
-        self.sess = tf.Session()
+        self.sess = tf.compat.v1.Session()
 
         # define graph inputs
         with tf.name_scope("input_" + self.name):
-            self.x = tf.placeholder(dtype='float32', shape=[None, self.n_neurons[0]], name='x')
-            self.y = tf.placeholder(dtype='float32', shape=[None, self.n_neurons[-1]], name='y')
+            self.x = tf.compat.v1.placeholder(dtype='float32', shape=[None, self.n_neurons[0]], name='x')
+            self.y = tf.compat.v1.placeholder(dtype='float32', shape=[None, self.n_neurons[-1]], name='y')
 
     def add_layer(self, n_neurons, activation=tf.sigmoid, w_init='default', b_init='default'):
         # add an hidden layer
@@ -53,28 +54,28 @@ class Fdnn(object):
                 if self.w_initializer[layer] is 'default' or self.b_initializer[layer] is 'default':
 
                     if layer == 0:
-                        init_w = tf.random_normal(shape=[self.n_neurons[layer], self.n_neurons[layer + 1]],
+                        init_w = tf.random.normal(shape=[self.n_neurons[layer], self.n_neurons[layer + 1]],
                                                   stddev=tf.sqrt(
-                                                      tf.div(2., tf.cast(self.n_neurons[layer], 'float32'))))
+                                                      tf.divide(2., tf.cast(self.n_neurons[layer], 'float32'))))
                     else:
 
-                        init_w = tf.random_normal(shape=[self.n_neurons[layer], self.n_neurons[layer + 1]],
+                        init_w = tf.random.normal(shape=[self.n_neurons[layer], self.n_neurons[layer + 1]],
                                                   stddev=tf.sqrt(
-                                                      tf.div(2., tf.cast(self.n_neurons[layer - 1], 'float32'))))
+                                                      tf.divide(2., tf.cast(self.n_neurons[layer - 1], 'float32'))))
 
                     if self.b_initializer[layer] is not None:
 
                         if layer == 0:
-                            init_b = tf.random_normal(shape=[self.n_neurons[layer + 1]],
+                            init_b = tf.random.normal(shape=[self.n_neurons[layer + 1]],
                                                       stddev=tf.sqrt(
-                                                          tf.div(2.,
+                                                          tf.divide(2.,
                                                                  tf.cast(self.n_neurons[layer], 'float32'))))
 
                         else:
 
-                            init_b = tf.random_normal(shape=[self.n_neurons[layer + 1]],
+                            init_b = tf.random.normal(shape=[self.n_neurons[layer + 1]],
                                                       stddev=tf.sqrt(
-                                                          tf.div(2.,
+                                                          tf.divide(2.,
                                                                  tf.cast(self.n_neurons[layer - 1], 'float32'))))
 
                         self.Hb.append(tf.Variable(init_b, trainable=False))

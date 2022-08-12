@@ -47,11 +47,11 @@ class ELM(Fdnn):
                                   trainable=False)
 
             self.HH_HT_op = tf.group(
-                tf.assign_add(self.HH, tf.matmul(self.H[- 1], self.H[- 1], transpose_a=True)),
-                tf.assign_add(self.HT, tf.matmul(self.H[- 1], self.y, transpose_a=True)), name='HH_HT_op'
+                tf.compat.v1.assign_add(self.HH, tf.matmul(self.H[- 1], self.H[- 1], transpose_a=True)),
+                tf.compat.v1.assign_add(self.HT, tf.matmul(self.H[- 1], self.y, transpose_a=True)), name='HH_HT_op'
             )
 
-            self.B_op = tf.assign(self.B, tf.matmul(tf.matrix_inverse(self.HH), self.HT), name='B_op')
+            self.B_op = tf.compat.v1.assign(self.B, tf.matmul(tf.linalg.inv(self.HH), self.HT), name='B_op')
 
         self.sess.run([self.HH.initializer, self.HT.initializer])
 
@@ -88,7 +88,7 @@ class ELM(Fdnn):
                                                                ((time.time() - t0) % 3600 % 60)))
         print("#" * 100)
 
-        self.saver = tf.train.Saver()
+        self.saver = tf.compat.v1.train.Saver()
 
     def fit(self, x, y, batch_size=1024):
 
@@ -100,7 +100,7 @@ class ELM(Fdnn):
         n_batches = int(np.ceil(x.shape[0] / batch_size))
 
         dataset = tf.data.Dataset.from_tensor_slices((self.x, self.y)).batch(batch_size=batch_size)
-        iterator = dataset.make_initializable_iterator()
+        iterator = tf.compat.v1.data.make_initializable_iterator(dataset)
 
         self.sess.run(iterator.initializer, feed_dict={self.x: x, self.y: y})
 
@@ -126,7 +126,7 @@ class ELM(Fdnn):
                 "Both feature and labels arrays should be provided when an iterator is not passed to the function"
 
             dataset = tf.data.Dataset.from_tensor_slices((self.x, self.y)).batch(batch_size=batch_size)
-            tf_iterator = dataset.make_initializable_iterator()
+            tf_iterator = tf.compat.v1.data.make_initializable_iterator(dataset)
 
             self.sess.run(tf_iterator.initializer, feed_dict={self.x: x, self.y: y})
 
@@ -173,7 +173,7 @@ class ELM(Fdnn):
                 "Feature array should be provided when an iterator is not passed to the function"
 
             dataset = tf.data.Dataset.from_tensor_slices((self.x)).batch(batch_size=batch_size)
-            tf_iterator = dataset.make_initializable_iterator()
+            tf_iterator = tf.compat.v1.data.make_initializable_iterator(dataset)
 
             self.sess.run(tf_iterator.initializer, feed_dict={self.x: x})
 
@@ -184,7 +184,7 @@ class ELM(Fdnn):
         y_out = []
         while True:
             try:
-                x_batch, _ = self.sess.run(next_batch)
+                x_batch = self.sess.run(next_batch)
                 y_out.extend(self.sess.run(self.y_out, feed_dict={self.x: x_batch}))
 
             except tf.errors.OutOfRangeError:
